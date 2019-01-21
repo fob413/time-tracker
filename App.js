@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, KeyboardAvoidingView } from 'react-native';
 import uuidv4 from 'uuid/v4';
 import { newTimer } from './utils/TimerUtils';
 
@@ -64,6 +64,27 @@ export default class App extends React.Component {
     });
   }
 
+  toggleTimer = timerId => {
+    this.setState(prevState => {
+      const { timers } = prevState;
+
+      return {
+        timers: timers.map(timer => {
+          const { id, isRunning } = timer;
+
+          if (id === timerId) {
+            return {
+              ...timer,
+              isRunning: !isRunning,
+            };
+          }
+
+          return timer;
+        }),
+      };
+    });
+  };
+
   componentDidMount() {
     const TIME_INTERVAL = 1000;
 
@@ -96,23 +117,31 @@ export default class App extends React.Component {
           <Text style={styles.title}>Timers</Text>
         </View>
 
-        <ScrollView style={styles.timerList}>
-          <ToggleableTimerForm onFormSubmit={this.handleCreateFormSubmit} />
+        <KeyboardAvoidingView
+          behavior="padding"
+          style={styles.timerListContainer}
+        >
+  
+          <ScrollView style={styles.timerList}>
+            <ToggleableTimerForm onFormSubmit={this.handleCreateFormSubmit} />
 
-          {timers.map(({ title, project, id, elapsed, isRunning }) => (
-            <EditableTimer
-              key={id}
-              id={id}
-              title={title}
-              project={project}
-              elapsed={elapsed}
-              isRunning={isRunning}
-              onFormSubmit={this.handleFormSubmit}
-              onRemovePress={this.handleRemovePress}
-            />
-          ))}
+            {timers.map(({ title, project, id, elapsed, isRunning }) => (
+              <EditableTimer
+                key={id}
+                id={id}
+                title={title}
+                project={project}
+                elapsed={elapsed}
+                isRunning={isRunning}
+                onFormSubmit={this.handleFormSubmit}
+                onRemovePress={this.handleRemovePress}
+                onStartPress={this.toggleTimer}
+                onStopPress={this.toggleTimer}
+              />
+            ))}
 
-        </ScrollView>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </View>
     );
   }
@@ -135,5 +164,8 @@ const styles = StyleSheet.create({
   },
   timerList: {
     paddingBottom: 15,
+  },
+  timerListContainer: {
+    flex: 1,
   },
 });
